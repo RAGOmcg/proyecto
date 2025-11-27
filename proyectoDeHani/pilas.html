@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilas LIFO y FIFO Interactivas</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #4B0082, #8A2BE2);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    min-height: 100vh;
+}
+h1 { margin-bottom: 20px; }
+
+.controls {
+    margin-bottom: 20px;
+}
+.controls input, .controls select {
+    padding: 8px;
+    width: 100px;
+    margin-right: 8px;
+    border-radius: 4px;
+    border: none;
+}
+.controls button {
+    padding: 8px 12px;
+    margin-right: 5px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    background: #FFD23F;
+    color: #4B0082;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.controls button:hover { background: #FFC107; }
+
+.stack-container {
+    margin-top: 30px;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    position: relative;
+    perspective: 800px;
+    padding: 10px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    background: rgba(0,0,0,0.1);
+}
+
+.stack-element {
+    width: 100px;
+    height: 50px;
+    background: linear-gradient(145deg, #ffd23f, #ffcb3b);
+    border: 2px solid #b5179e;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #4B0082;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.4);
+    transform-style: preserve-3d;
+    position: relative;
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+.top-indicator {
+    position: absolute;
+    right: -60px;
+    padding: 4px 8px;
+    background: #6a0dad;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.message {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #FF6B6B;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.message.show {
+    opacity: 1;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>Pilas LIFO y FIFO Interactivas</h1>
+</header>
+<main>
+<div class="controls">
+    <input type="number" id="valInput" placeholder="Valor">
+    <select id="stackType">
+        <option value="lifo">LIFO (Pila)</option>
+        <option value="fifo">FIFO (Cola)</option>
+    </select>
+    <input type="number" id="stackCapacity" placeholder="Max Elementos" value="10" min="1" style="width:120px;">
+    <button id="btnPush">Agregar</button>
+    <button id="btnPop">Eliminar</button>
+    <button id="btnClear">Limpiar</button>
+</div>
+
+<div class="stack-container" id="stackContainer">
+    <div class="message" id="msgBox"></div>
+</div>
+  <button id="menu" onclick="menu">menu</button> 
+
+ <div>
+    
+ </div>
+</main>
+
+<script>
+// ================= Clases ===================
+class LIFO {
+    constructor(capacidad = 10) { this.elementos = []; this.capacidad = capacidad; }
+    push(valor) { 
+        if (this.elementos.length >= this.capacidad) return false;
+        this.elementos.push(valor); 
+        return true;
+    }
+    pop() { 
+        if (this.isEmpty()) return null;
+        return this.elementos.pop(); 
+    }
+    top() { return this.isEmpty() ? null : this.elementos[this.elementos.length-1]; }
+    isEmpty() { return this.elementos.length === 0; }
+    clear() { this.elementos = []; }
+}
+
+class FIFO {
+    constructor(capacidad = 10) { this.elementos = []; this.capacidad = capacidad; }
+    push(valor) { 
+        if (this.elementos.length >= this.capacidad) return false;
+        this.elementos.push(valor); 
+        return true;
+    }
+    pop() { 
+        if (this.isEmpty()) return null;
+        return this.elementos.shift(); 
+    }
+    top() { return this.isEmpty() ? null : this.elementos[0]; }
+    isEmpty() { return this.elementos.length === 0; }
+    clear() { this.elementos = []; }
+}
+
+// ================= Variables ===================
+let miPila = new LIFO(parseInt(document.getElementById('stackCapacity').value));
+const stackContainer = document.getElementById('stackContainer');
+const valInput = document.getElementById('valInput');
+const stackTypeSelect = document.getElementById('stackType');
+const msgBox = document.getElementById('msgBox');
+const capacityInput = document.getElementById('stackCapacity');
+
+// ================= Funciones ===================
+function showMessage(text) {
+    msgBox.textContent = text;
+    msgBox.classList.add('show');
+    setTimeout(() => msgBox.classList.remove('show'), 1200);
+}
+
+function actualizarPila() {
+    stackContainer.querySelectorAll('.stack-element').forEach(el => el.remove());
+    miPila.elementos.forEach((val, index) => {
+        const elem = document.createElement('div');
+        elem.className = 'stack-element';
+        elem.textContent = val;
+
+        if ((stackTypeSelect.value === 'lifo' && index === miPila.elementos.length-1) ||
+            (stackTypeSelect.value === 'fifo' && index === 0)) {
+            const topLabel = document.createElement('div');
+            topLabel.className = 'top-indicator';
+            topLabel.textContent = 'TOPE';
+            elem.appendChild(topLabel);
+        }
+
+        stackContainer.appendChild(elem);
+    });
+}
+
+function cambiarTipoPila(tipo) {
+    const capacidad = parseInt(capacityInput.value) || 10;
+    switch(tipo) {
+        case 'lifo': miPila = new LIFO(capacidad); break;
+        case 'fifo': miPila = new FIFO(capacidad); break;
+    }
+    actualizarPila();
+}
+
+// ================= Eventos ===================
+document.getElementById('btnPush').addEventListener('click', () => {
+    const val = parseInt(valInput.value);
+    if (isNaN(val)) return;
+    if (!miPila.push(val)) {
+        showMessage("Desbordamiento: Pila llena!");
+    }
+    actualizarPila();
+    valInput.value = '';
+});
+
+document.getElementById('btnPop').addEventListener('click', () => {
+    if (miPila.isEmpty()) {
+        showMessage("Subdesbordamiento: Pila vacía!");
+        return;
+    }
+    miPila.pop();
+    actualizarPila();
+});
+
+document.getElementById('btnClear').addEventListener('click', () => {
+    miPila.clear();
+    actualizarPila();
+});
+
+stackTypeSelect.addEventListener('change', () => {
+    cambiarTipoPila(stackTypeSelect.value);
+});
+
+capacityInput.addEventListener('change', () => {
+    cambiarTipoPila(stackTypeSelect.value);
+});
+
+valInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') document.getElementById('btnPush').click();
+});
+
+document.getElementById("menu").addEventListener("click", function() {
+    // Aquí puedes poner lógica extra antes de ir a la página
+    window.location.href = "index.html";
+});
+// Inicializar
+actualizarPila();
+</script>
+</body>
+</html>
