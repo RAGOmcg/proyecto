@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glosario y Arreglos - Estructura de Datos</title>
+
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CSS incrustado -->
+    <style>
+        :root{
+            --bg-from: #8866b4;
+            --bg-to: #a584d1;
+        }
+
+        html,body{height:100%}
+        body {
+            box-sizing: border-box; 
+            background: linear-gradient(to bottom right, var(--bg-from), var(--bg-to));
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
+        /* Term cards */
+        .term-card {
+            transition: all 0.3s ease;
+            background-color: #4a018a;
+            color: #fff;
+        }
+        .term-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .definition-enter {
+            animation: slideIn 0.28s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Código en secciones de arreglos */
+        .code-box{
+            background: rgba(255,255,255,0.06);
+            border-left: 3px solid rgba(255,255,255,0.12);
+            padding: 12px;
+            border-radius: 8px;
+            color: #0b1220;
+            overflow:auto;
+        }
+
+        .illustration{
+            width:100%;
+            max-height:180px;
+            object-fit:contain;
+            margin-top:12px;
+            border-radius:8px;
+        }
+
+        /* Tabs */
+        .tab-btn { cursor:pointer; }
+        .active-tab { background:rgba(255,255,255,0.12); }
+
+        /* Responsive modal fix */
+        #termDetail .bg-white{ max-height:85vh; }
+
+        /* small helpers */
+        .hidden-el{ display:none; }
+
+    
+
+        /* Botón Colas estilo */
+        .btn-colas {
+            background: linear-gradient(90deg, #b5179e, #7209b7);
+            border: none;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .btn-colas:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+
+        <!-- HEADER -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-white">Glosario & Arreglos — Estructura de Datos</h1>
+                <p class="text-white/90 mt-1">Explora conceptos y ejemplos de arreglos en la misma página.</p>
+            </div>
+
+            <!-- TABS + BOTÓN COLAS -->
+            <div class="flex gap-2 items-center">
+                
+                <button id="tabGlossary" class="tab-btn px-4 py-2 rounded-full text-sm font-medium bg-white/10 text-white">Glosario</button>
+                <button id="tabArrays" class="tab-btn px-4 py-2 rounded-full text-sm font-medium bg-white/10 text-white">Arreglos</button>
+                <button id="arboles" class="tab-btn px-4 py-2 rounded-full text-sm font-medium bg-white/10 text-white">arboles</button>
+                 <button id="pilas" class="tab-btn px-4 py-2 rounded-full text-sm font-medium bg-white/10 text-white">pilas</button>
+
+
+                <!-- BOTÓN QUE LLEVA A colas.html -->
+                <button id="btnColas" class="btn-colas ml-2 text-sm">Colas</button>
+            </div>
+        </div>
+
+        <!-- ===== CONTENIDO: GLOSARIO ===== -->
+        <div id="viewGlossary">
+
+            <!-- BÚSQUEDA -->
+            <div class="max-w-md mx-auto mb-6">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Buscar conceptos..." 
+                        class="w-full px-4 py-3 pl-10 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTROS -->
+            <div class="flex flex-wrap justify-center gap-2 mb-8">
+                <button onclick="filterByCategory('all')" class="filter-btn bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600">Todos</button>
+                <button onclick="filterByCategory('conceptos fundamentales')" class="filter-btn bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium">Conceptos Fundamentales</button>
+                <button onclick="filterByCategory('estructuras y componentes')" class="filter-btn bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium">Estructuras y Componentes</button>
+                <button onclick="filterByCategory('elementos de programacion')" class="filter-btn bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium">Elementos de Programación</button>
+                <button onclick="filterByCategory('control de memoria')" class="filter-btn bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium">Control de Memoria</button>
+                <button onclick="filterByCategory('posicion y tipos de datos')" class="filter-btn bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium">Posición y Tipos</button>
+            </div>
+
+            <!-- GRID -->
+            <div id="glossaryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
+                <!-- JS genera aquí las tarjetas -->
+            </div>
+
+            <!-- MODAL DETALLE -->
+            <div id="termDetail" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-lg max-w-2xl w-full overflow-y-auto">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h2 id="detailTerm" class="text-2xl font-bold text-gray-800"></h2>
+                            <button onclick="closeDetail()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                        </div>
+
+                        <div id="detailCategory" class="inline-block px-3 py-1 rounded-full text-xs font-medium mb-4"></div>
+                        <p id="detailDefinition" class="text-gray-600 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CONTENIDO: ARREGLOS ===== -->
+        <div id="viewArrays" class="hidden-el">
+
+            <div class="bg-white/80 rounded-xl shadow-md p-6 mb-6 section-card">
+                <h2 class="text-2xl font-semibold text-blue-700 mb-3">🔹 Arreglos Unidimensionales</h2>
+                <p class="text-gray-700 mb-4">
+                    Colección lineal de elementos del mismo tipo, almacenados contiguamente en memoria. Cada elemento usa un índice.
+                </p>
+                <pre class="code-box"><code>int numeros[5] = {10, 20, 30, 40, 50};
+    
+// Acceso a elementos
+numeros[0]; // Primer elemento
+numeros[4]; // Último elemento</code></pre>
+                <img src="imagenes/unidimencional.png" alt="Arreglo Unidimensional" class="illustration">
+            </div>
+
+            <div class="bg-white/80 rounded-xl shadow-md p-6 mb-6 section-card">
+                <h2 class="text-2xl font-semibold text-green-700 mb-3">🔸 Arreglos Bidimensionales (Matrices)</h2>
+                <p class="text-gray-700 mb-4">Organizan elementos en filas y columnas.</p>
+                <pre class="code-box"><code>int matriz[3][3] = {
+  {1, 2, 3},
+  {4, 5, 6},
+  {7, 8, 9}
+};
+
+// Acceso
+matriz[0][1]; // → 2</code></pre>
+                <img src="imagenes/dimencional.png" alt="Arreglo Bidimensional" class="illustration">
+            </div>
+
+            <div class="bg-white/80 rounded-xl shadow-md p-6 mb-6 section-card">
+                <h2 class="text-2xl font-semibold text-purple-700 mb-3">🔻 Arreglos Tridimensionales</h2>
+                <p class="text-gray-700 mb-4">Extensión 3D para volumen o coordenadas espaciales.</p>
+                <pre class="code-box"><code>int cubo[2][2][2] = {
+  { {1, 2}, {3, 4} },
+  { {5, 6}, {7, 8} }
+};
+
+// Acceso
+cubo[1][0][1]; // → 6</code></pre>
+                <img src="imagenes/tridimencional.png" alt="Arreglo Tridimensional" class="illustration">
+            </div>
+
+            <div class="flex gap-2 mt-4">
+                <button id="backToGloss" class="bg-indigo-500 text-white px-4 py-2 rounded-full">← Volver al Glosario</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JS incrustado -->
+    <script>
+        /* ===== Datos del glosario (completo) ===== */
+        const glossaryData = [
+            // Conceptos Fundamentales
+            { term: "Estructura de datos", definition: "Organización y almacenamiento de datos de manera que puedan ser utilizados eficientemente.", category: "conceptos fundamentales" },
+            { term: "Tipos de datos", definition: "Clasificación de los datos que define el tipo de valores que puede contener y las operaciones que se pueden realizar.", category: "conceptos fundamentales" },
+            { term: "Tipos de datos abstractos (TDA)", definition: "Modelos matemáticos de datos y operaciones que definen un comportamiento sin especificar implementación concreta.", category: "conceptos fundamentales" },
+            { term: "Recursividad directa", definition: "Cuando una función se llama a sí misma directamente.", category: "conceptos fundamentales" },
+            { term: "Recursividad indirecta", definition: "Cuando una función llama a otra función que finalmente llama a la primera.", category: "conceptos fundamentales" },
+            { term: "Constructor", definition: "Función especial usada para inicializar un objeto al ser creado.", category: "conceptos fundamentales" },
+            { term: "Unidades temáticas", definition: "División de contenido en secciones o módulos para organizar conceptos.", category: "conceptos fundamentales" },
+
+            // Estructuras y Componentes
+            { term: "Estáticas (estructuras)", definition: "Estructuras de datos con tamaño fijo durante la ejecución del programa.", category: "estructuras y componentes" },
+            { term: "Dinámicas (estructuras)", definition: "Estructuras de datos cuyo tamaño puede cambiar durante la ejecución del programa.", category: "estructuras y componentes" },
+            { term: "Bloques de construcción estáticas", definition: "Componentes de estructuras estáticas, como arrays o registros.", category: "estructuras y componentes" },
+            { term: "Bloques de construcción en dinámicas", definition: "Componentes de estructuras dinámicas, como nodos en listas enlazadas.", category: "estructuras y componentes" },
+            { term: "Nodos", definition: "Elementos básicos de estructuras dinámicas que contienen datos y referencias a otros nodos.", category: "estructuras y componentes" },
+            { term: "Arreglos", definition: "Colección de elementos del mismo tipo, almacenados contiguamente en memoria.", category: "estructuras y componentes" },
+
+            // Elementos de Programación
+            { term: "Declaración", definition: "Instrucción que define variables, funciones o estructuras.", category: "elementos de programacion" },
+            { term: "Tamaño [ ]", definition: "Indica el tamaño o dimensiones de un arreglo.", category: "elementos de programacion" },
+            { term: "Corchetes { }", definition: "Se usan para delimitar bloques de código en la mayoría de lenguajes.", category: "elementos de programacion" },
+            { term: "Palabra reservada", definition: "Palabras con significado especial en un lenguaje de programación.", category: "elementos de programacion" },
+            { term: "Sintaxis", definition: "Conjunto de reglas que define la forma correcta de escribir código.", category: "elementos de programacion" },
+            { term: "Semántica", definition: "Significado o interpretación de las instrucciones del código.", category: "elementos de programacion" },
+
+            // Control de Memoria
+            { term: "Apuntador (*)", definition: "Variable que almacena la dirección de memoria de otra variable.", category: "control de memoria" },
+            { term: "Iterador", definition: "Objeto o variable que permite recorrer elementos de una colección.", category: "control de memoria" },
+            { term: "Long int", definition: "Tipo de dato entero de mayor tamaño.", category: "control de memoria" },
+            { term: "Transformación de datos", definition: "Proceso de convertir datos de un formato a otro.", category: "control de memoria" },
+
+            // Posición y Tipos de Datos
+            { term: "Índice", definition: "Número que indica la posición de un elemento en una estructura.", category: "posicion y tipos de datos" },
+            { term: "Subíndice", definition: "Valor usado para acceder a un elemento específico de una estructura.", category: "posicion y tipos de datos" },
+            { term: "char", definition: "Tipo de dato que almacena un solo carácter.", category: "posicion y tipos de datos" },
+            { term: "short", definition: "Tipo de dato entero pequeño.", category: "posicion y tipos de datos" },
+            { term: "int", definition: "Tipo de dato entero estándar.", category: "posicion y tipos de datos" },
+            { term: "long", definition: "Tipo de dato entero grande.", category: "posicion y tipos de datos" },
+            { term: "float", definition: "Tipo de dato que almacena números decimales de precisión simple.", category: "posicion y tipos de datos" },
+            { term: "double", definition: "Tipo de dato que almacena números decimales de doble precisión.", category: "posicion y tipos de datos" },
+            { term: "long double", definition: "Tipo de dato que almacena números decimales de precisión extendida.", category: "posicion y tipos de datos" },
+        ];
+
+        let filteredData = [...glossaryData];
+        let currentFilter = 'all';
+
+        const categoryColors = {
+            "conceptos fundamentales": "bg-blue-100 text-blue-800",
+            "estructuras y componentes": "bg-green-100 text-green-800",
+            "elementos de programacion": "bg-yellow-100 text-yellow-800",
+            "control de memoria": "bg-purple-100 text-purple-800",
+            "posicion y tipos de datos": "bg-pink-100 text-pink-800"
+        };
+
+        /* ===== Inicialización ===== */
+        function initGlossary() {
+            renderGlossary();
+            setupSearch();
+        }
+
+        function renderGlossary() {
+            const grid = document.getElementById('glossaryGrid');
+            grid.innerHTML = '';
+
+            filteredData.forEach(item => {
+                const termCard = document.createElement('div');
+                termCard.className = 'term-card rounded-lg shadow-md p-6 cursor-pointer border border-gray-200';
+                termCard.onclick = () => showTermDetail(item);
+
+                termCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-semibold">${item.term}</h3>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${categoryColors[item.category]} text-xs">${item.category}</span>
+                    </div>
+                    <p class="text-sm line-clamp-3">${item.definition.substring(0, 120)}${item.definition.length>120 ? '...' : ''}</p>
+                    <div class="mt-4 text-blue-100 text-sm font-medium">Click para ver más →</div>
+                `;
+
+                grid.appendChild(termCard);
+            });
+
+            if (filteredData.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-white/80">No se encontraron conceptos.</div>';
+            }
+        }
+
+        function showTermDetail(item) {
+            document.getElementById('detailTerm').textContent = item.term;
+            document.getElementById('detailCategory').textContent = item.category;
+            document.getElementById('detailCategory').className = `inline-block px-3 py-1 rounded-full text-xs font-medium mb-4 ${categoryColors[item.category]}`;
+            document.getElementById('detailDefinition').textContent = item.definition;
+            const modal = document.getElementById('termDetail');
+            modal.classList.remove('hidden');
+            // aplicar animación
+            const inner = modal.querySelector('.bg-white');
+            if(inner) inner.classList.add('definition-enter');
+        }
+
+        function closeDetail() {
+            document.getElementById('termDetail').classList.add('hidden');
+        }
+
+        function filterByCategory(category) {
+            currentFilter = category;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = 'filter-btn bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium';
+            });
+
+            // marcar el botón actual
+            try {
+                event.target.className = 'filter-btn bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium';
+            } catch(e){}
+
+            if (category === 'all') {
+                filteredData = [...glossaryData];
+            } else {
+                filteredData = glossaryData.filter(item => item.category === category);
+            }
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredData = filteredData.filter(item =>
+                    item.term.toLowerCase().includes(searchTerm) ||
+                    item.definition.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            renderGlossary();
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                let baseData = currentFilter === 'all' ? glossaryData : glossaryData.filter(item => item.category === currentFilter);
+
+                if (searchTerm) {
+                    filteredData = baseData.filter(item =>
+                        item.term.toLowerCase().includes(searchTerm) ||
+                        item.definition.toLowerCase().includes(searchTerm)
+                    );
+                } else {
+                    filteredData = baseData;
+                }
+
+                renderGlossary();
+            });
+        }
+
+        document.getElementById('termDetail').addEventListener('click', (e) => {
+            if (e.target.id === 'termDetail') closeDetail();
+        });
+
+        /* ===== PESTAÑAS / NAVEGACIÓN ENTRE VISTAS ===== */
+        const tabGlossary = document.getElementById('tabGlossary');
+        const tabArrays = document.getElementById('tabArrays');
+        const viewGlossary = document.getElementById('viewGlossary');
+        const viewArrays = document.getElementById('viewArrays');
+        const backToGloss = document.getElementById('backToGloss');
+        const btnColas = document.getElementById('btnColas');
+
+        function showGlossaryView(){
+            viewArrays.classList.add('hidden-el');
+            viewGlossary.classList.remove('hidden-el');
+            tabGlossary.classList.add('active-tab');
+            tabArrays.classList.remove('active-tab');
+        }
+
+        function showArraysView(){
+            viewGlossary.classList.add('hidden-el');
+            viewArrays.classList.remove('hidden-el');
+            tabArrays.classList.add('active-tab');
+            tabGlossary.classList.remove('active-tab');
+            // al entrar en arreglos, ocultar modal si está abierto
+            closeDetail();
+        }
+
+        tabGlossary.addEventListener('click', showGlossaryView);
+        tabArrays.addEventListener('click', showArraysView);
+        backToGloss.addEventListener('click', showGlossaryView);
+
+        document.getElementById("arboles").addEventListener("click", function() {
+            // Aquí puedes poner lógica extra antes de ir a la página
+         window.location.href = "arboles.html";
+         });
+
+        // botón que navega a colas.html 
+        btnColas.addEventListener('click', () => {
+            // abre en la misma pestaña; cambia a '_blank' si quieres nueva pestaña
+            window.location.href = 'colas.html';
+        });
+
+         pilas.addEventListener('click', () => {
+            
+            window.location.href = 'pilas.html';
+        });
+
+        /* ===== Inicializa todo ===== */
+        initGlossary();
+        showGlossaryView();
+    </script>
+
+</body>
+</html>
